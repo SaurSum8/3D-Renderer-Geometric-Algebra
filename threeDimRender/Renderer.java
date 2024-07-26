@@ -94,9 +94,9 @@ public class Renderer extends JPanel implements KeyListener {
 		triangles[0][1][1] = 10.0;
 		triangles[0][1][2] = 0.0;
 		
-		triangles[0][2][0] = 25.0;
-		triangles[0][2][1] = 25.0;
-		triangles[0][2][2] = 25.0;
+		triangles[0][2][0] = 50.0;
+		triangles[0][2][1] = 50.0;
+		triangles[0][2][2] = 50.0;
 		
 		
 		triangles[1][0][0] = triangles[0][0][1];
@@ -107,9 +107,9 @@ public class Renderer extends JPanel implements KeyListener {
 		triangles[1][1][1] = 10.0;
 		triangles[1][1][2] = 0.0;
 		
-		triangles[1][2][0] = 25.0;
+		triangles[1][2][0] = 50.0;
 		triangles[1][2][1] = triangles[0][2][1];
-		triangles[1][2][2] = 25.0;
+		triangles[1][2][2] = 50.0;
 		
 	}
 	
@@ -193,10 +193,10 @@ public class Renderer extends JPanel implements KeyListener {
 		}
 		
 		//Temp Stuff To Test 3D effect:-
-		rad += 0.004;
+//		rad += 0.004;
 				
 		triangles[0][1][1] = 10.0 * Math.cos(rad);
-		triangles[0][2][1] = 25.0 + 5.0 * Math.sin(rad);
+		triangles[0][2][1] = 50.0 + 5.0 * Math.sin(rad);
 				
 		triangles[1][1][0] = triangles[0][1][1];
 		triangles[1][1][1] = triangles[0][1][1];;
@@ -313,7 +313,7 @@ public class Renderer extends JPanel implements KeyListener {
 			rad += 0.1;
 			
 			triangles[0][1][1] = 5.0 * Math.cos(rad);
-			triangles[0][2][1] = 25.0 + 5.0 * Math.sin(rad);
+			triangles[0][2][1] = 50.0 + 5.0 * Math.sin(rad);
 			
 			triangles[1][1][0] = triangles[0][1][1];
 			triangles[1][1][1] = triangles[0][1][1];;
@@ -322,8 +322,26 @@ public class Renderer extends JPanel implements KeyListener {
 			triangles[1][2][1] = triangles[0][2][1];
 			
 		}
+
+		double[] rotV0 = {1.0, 0.0, 0.0};
+		double[] rotV1 = {Math.cos(Math.PI / 180.0), 0.0, Math.sin(Math.PI / 180.0)};
+		double[] rotV2 = {Math.cos(Math.PI / 180.0), 0.0, -Math.sin(Math.PI / 180.0)};
 		
-		if(e.getKeyCode() == KeyEvent.VK_2) {}
+		if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+			
+			camFovVec = rotateVec3D(camFovVec, rotV0, rotV1);
+			horiProjVec = rotateVec3D(horiProjVec, rotV0, rotV1);
+			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
+			
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+			
+			camFovVec = rotateVec3D(camFovVec, rotV0, rotV2);
+			horiProjVec = rotateVec3D(horiProjVec, rotV0, rotV2);
+			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
+			
+		}
 		
 	}
 
