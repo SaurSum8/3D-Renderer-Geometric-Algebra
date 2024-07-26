@@ -193,16 +193,16 @@ public class Renderer extends JPanel implements KeyListener {
 		}
 		
 		//Temp Stuff To Test 3D effect:-
-//		rad += 0.004;
+/*		rad += 0.004;
 				
 		triangles[0][1][1] = 10.0 * Math.cos(rad);
-		triangles[0][2][1] = 50.0 + 5.0 * Math.sin(rad);
+		triangles[0][2][1] = 50.0 + 10.0 * Math.sin(rad);
 				
 		triangles[1][1][0] = triangles[0][1][1];
 		triangles[1][1][1] = triangles[0][1][1];;
 				
 		triangles[1][2][0] = triangles[0][2][1];
-		triangles[1][2][1] = triangles[0][2][1];
+		triangles[1][2][1] = triangles[0][2][1];*/
 		
 		//Repaint/Refresh Rate Counter
 		if(System.currentTimeMillis() - t >= 1000) {
@@ -312,8 +312,8 @@ public class Renderer extends JPanel implements KeyListener {
 			
 			rad += 0.1;
 			
-			triangles[0][1][1] = 5.0 * Math.cos(rad);
-			triangles[0][2][1] = 50.0 + 5.0 * Math.sin(rad);
+			triangles[0][1][1] = 10.0 * Math.cos(rad);
+			triangles[0][2][1] = 50.0 + 10.0 * Math.sin(rad);
 			
 			triangles[1][1][0] = triangles[0][1][1];
 			triangles[1][1][1] = triangles[0][1][1];;
