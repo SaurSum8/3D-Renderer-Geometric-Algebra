@@ -188,7 +188,7 @@ public class Renderer extends JPanel implements KeyListener {
 			}
 			
 			//Finally, draw/fill these shapes
-			g.fillPolygon(posX, posY, 3);
+			g.drawPolygon(posX, posY, 3);
 			
 		}
 		
@@ -300,6 +300,7 @@ public class Renderer extends JPanel implements KeyListener {
 	public void keyTyped(KeyEvent e) {}
 	
 	double rad = 0.0;
+	double[] camPos = new double[3];
 	
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -325,7 +326,6 @@ public class Renderer extends JPanel implements KeyListener {
 
 		double[] rotV0 = {1.0, 0.0, 0.0};
 		double[] rotV1 = {Math.cos(Math.PI / 180.0), 0.0, Math.sin(Math.PI / 180.0)};
-		double[] rotV2 = {Math.cos(Math.PI / 180.0), 0.0, -Math.sin(Math.PI / 180.0)};
 		
 		if(e.getKeyCode() == KeyEvent.VK_LEFT) {
 			
@@ -337,9 +337,13 @@ public class Renderer extends JPanel implements KeyListener {
 		
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
 			
-			camFovVec = rotateVec3D(camFovVec, rotV0, rotV2);
-			horiProjVec = rotateVec3D(horiProjVec, rotV0, rotV2);
+			camFovVec = rotateVec3D(camFovVec, rotV1, rotV0);
+			horiProjVec = rotateVec3D(horiProjVec, rotV1, rotV0);
 			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
+			
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_W) {
 			
 		}
 		
