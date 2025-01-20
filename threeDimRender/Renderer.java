@@ -27,8 +27,12 @@ public class Renderer extends JPanel implements KeyListener {
 	int centerX = (int) frameDimensions[0] / 2;
 	int centerY = (int) frameDimensions[1] / 2;
 	
-	//Camera FOV Vector
-	double[] camFovVec = new double[3];
+	double fov = Math.PI / 2.0;
+	
+	//Camera Vectors
+	double[] camTL = new double[3];
+	double[] camBL = new double[3];
+	double[] camTR = new double[3];
 	
 	//Projection Bivector Stuff
 	double[] horiProjVec = new double[3];
@@ -46,7 +50,9 @@ public class Renderer extends JPanel implements KeyListener {
 		this.setBackground(Color.black);
 		
 		//Camera FOV Vector Intialization + Setup
-		camFovVec[2] = 1.0;
+		camTL[2] = 1.0;
+		camTR[2] = 1.0;
+		camBL[2] = 1.0;
 		
 		double[] rotVec1 = new double[3];
 		double[] rotVec2 = new double[3];
@@ -54,22 +60,32 @@ public class Renderer extends JPanel implements KeyListener {
 		
 		rotVec1[0] = 1.0;
 		
-		//90 deg FOV
-		rotVec2[0] = Math.cos(Math.PI / 8.0);
-		rotVec2[2] = Math.sin(Math.PI / 8.0);
+		//FOV
+		rotVec2[0] = Math.cos(fov / 4.0);
+		rotVec2[2] = Math.sin(fov / 4.0);
 		
-		camFovVec = rotateVec3D(camFovVec, rotVec1, rotVec2);
+		camTL = rotateVec3D(camTL, rotVec1, rotVec2);
+		camBL = rotateVec3D(camBL, rotVec1, rotVec2);
+		
+		camTR = rotateVec3D(camTR, rotVec2, rotVec1); //Rotate in opposite direction (Right)
 		
 		//Setup Horizontal Component of Projection Bivector 
-		horiProjVecLen = 2 * Math.abs(camFovVec[0]);
+		horiProjVecLen = 2 * Math.abs(camTL[0]);
 		horiProjVec[0] = 1.0; //Only capture direction to ease future calculations
 		
 		//Setup Vertical Component of Projection Bivector to respect Aspect Ratio Of Display
 		vertProjVecLen = horiProjVecLen / aspectRatio;
 		vertProjVec[1] = -1.0;
 		
+		if(vertProjVecLen / 2.0 > camTL[0]) {
+			System.err.println("vertProjVecLen is unreasonably large! Change FOV!");
+			System.exit(0);
+		} //TODO Explore this more
+		
 		//Get Angle to rotate CamFovVec to get proper vertical component as decided above
-		double liftAngle = Math.asin((vertProjVecLen / 2.0) / (camFovVec[2]));
+		double liftAngle = Math.asin((vertProjVecLen / 2.0) / camTL[0]);
+		//Dividing by camTL[0] as it is the radius (hypotenuse) of the slice of circle in the sphere
+		//that these vectors are located in
 		
 		rotVec1[0] = 0.0;
 		rotVec1[2] = 1.0;
@@ -77,11 +93,19 @@ public class Renderer extends JPanel implements KeyListener {
 		rotVec3[2] = Math.cos(liftAngle / 2.0);
 		rotVec3[1] = Math.sin(liftAngle / 2.0);
 		
-		camFovVec = rotateVec3D(camFovVec, rotVec1, rotVec3); 
+		camTL = rotateVec3D(camTL, rotVec1, rotVec3);
+		camTR = rotateVec3D(camTR, rotVec1, rotVec3);
+		
+		camBL = rotateVec3D(camBL, rotVec3, rotVec1); //Rotate in opposite direction (Down)
 		//Note: Rotation Plane is purposely not camFovVec above 
 		//to ensure horizontal fov remains constant
 		
 		//Projection Bivector
+		horiProjVec = sub3D(camTR, camTL);
+		vertProjVec = sub3D(camBL, camTL);
+		System.out.println(horiProjVec[0] + " " + vertProjVec[1]);
+		horiProjVec = normalize3D(horiProjVec);
+		vertProjVec = normalize3D(vertProjVec);
 		projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
 		
 		//Temp Testing Triangle Init:
@@ -146,9 +170,9 @@ public class Renderer extends JPanel implements KeyListener {
 			
 			//Get scaler lambda's numerator value, to scale down originTo3DPoint vector
 			//onto screen's projection bivector/plane
-			double lambdaNumer = camFovVec[0] * projBiVec[1];
-			lambdaNumer -= camFovVec[1] * projBiVec[2];
-			lambdaNumer += camFovVec[2] * projBiVec[0];
+			double lambdaNumer = camTL[0] * projBiVec[1];
+			lambdaNumer -= camTL[1] * projBiVec[2];
+			lambdaNumer += camTL[2] * projBiVec[0];
 			
 			//Will Store Position On Screen
 			int[] posX = new int[3];
@@ -170,9 +194,9 @@ public class Renderer extends JPanel implements KeyListener {
 				//Frame Vector, i.e. originTo3DPoint wrt position of Proj Bivector
 				double[] fVec = new double[3];
 				
-				fVec[0] = (lambda * oVec[0][i]) - camFovVec[0];
-				fVec[1] = (lambda * oVec[1][i]) - camFovVec[1];
-				fVec[2] = (lambda * oVec[2][i]) - camFovVec[2];
+				fVec[0] = (lambda * oVec[0][i]) - camTL[0];
+				fVec[1] = (lambda * oVec[1][i]) - camTL[1];
+				fVec[2] = (lambda * oVec[2][i]) - camTL[2];
 				
 				//Get "at after what % of the screen does this point exist" for x & y axes
 				double hProj = dotProd3D(fVec, horiProjVec);
@@ -193,7 +217,7 @@ public class Renderer extends JPanel implements KeyListener {
 		}
 		
 		//Temp Stuff To Test 3D effect:-
-/*		rad += 0.004;
+		rad += 0.004;
 				
 		triangles[0][1][1] = 10.0 * Math.cos(rad);
 		triangles[0][2][1] = 50.0 + 10.0 * Math.sin(rad);
@@ -202,7 +226,7 @@ public class Renderer extends JPanel implements KeyListener {
 		triangles[1][1][1] = triangles[0][1][1];;
 				
 		triangles[1][2][0] = triangles[0][2][1];
-		triangles[1][2][1] = triangles[0][2][1];*/
+		triangles[1][2][1] = triangles[0][2][1];
 		
 		//Repaint/Refresh Rate Counter
 		if(System.currentTimeMillis() - t >= 1000) {
@@ -296,11 +320,53 @@ public class Renderer extends JPanel implements KeyListener {
 		return val;
 	}
 	
+	public double[] add3D(double[] a, double[] b) {
+		double[] ret = new double[3];
+		
+		ret[0] = a[0] + b[0];
+		ret[1] = a[1] + b[1];
+		ret[2] = a[2] + b[2];
+		
+		return ret;
+	}
+	
+	public double[] sub3D(double[] a, double[] b) {
+		double[] ret = new double[3];
+		
+		ret[0] = a[0] - b[0];
+		ret[1] = a[1] - b[1];
+		ret[2] = a[2] - b[2];
+		
+		return ret;
+	}
+	
+	public double[] normalize3D(double[] vec) {
+		
+		double[] normed = new double[3];
+		
+		double x = Math.sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+		
+		normed[0] = vec[0] / x;
+		normed[1] = vec[1] / x;
+		normed[2] = vec[2] / x;
+		
+		return normed;
+	}
+	
 	@Override
 	public void keyTyped(KeyEvent e) {}
 	
 	double rad = 0.0;
 	double[] camPos = new double[3];
+	
+	double[] rotV0 = {1.0, 0.0, 0.0};
+	double[] rotV1 = {Math.cos(Math.PI / 180.0), 0.0, Math.sin(Math.PI / 180.0)};
+	
+	double[] rotV0b = {1.0, 0.0, 0.0};
+	double[] rotV1b = {Math.cos(Math.PI / 180.0), 0.0, Math.sin(Math.PI / 180.0)};
+	
+	double[] rotV2 = {0.0, 0.0, 1.0};
+	double[] rotV3 = {0.0, Math.sin(Math.PI / 180.0), Math.cos(Math.PI / 180.0)};
 	
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -309,7 +375,7 @@ public class Renderer extends JPanel implements KeyListener {
 			System.exit(0);
 		
 		
-		if(e.getKeyCode() == KeyEvent.VK_1) {
+		/*if(e.getKeyCode() == KeyEvent.VK_1) {
 			
 			rad += 0.1;
 			
@@ -323,23 +389,44 @@ public class Renderer extends JPanel implements KeyListener {
 			triangles[1][2][1] = triangles[0][2][1];
 			
 		}
-
-		double[] rotV0 = {1.0, 0.0, 0.0};
-		double[] rotV1 = {Math.cos(Math.PI / 180.0), 0.0, Math.sin(Math.PI / 180.0)};
 		
 		if(e.getKeyCode() == KeyEvent.VK_LEFT) {
 			
 			camFovVec = rotateVec3D(camFovVec, rotV0, rotV1);
-			horiProjVec = rotateVec3D(horiProjVec, rotV0, rotV1);
+			horiProjVec = rotateVec3D(horiProjVec, rotV0b, rotV1b);
 			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
+			rotV2 = rotateVec3D(rotV2, rotV0, rotV1);
+			rotV3 = rotateVec3D(rotV3, rotV0, rotV1);
 			
 		}
 		
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
 			
 			camFovVec = rotateVec3D(camFovVec, rotV1, rotV0);
-			horiProjVec = rotateVec3D(horiProjVec, rotV1, rotV0);
+			horiProjVec = rotateVec3D(horiProjVec, rotV1b, rotV0b);
 			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
+			rotV2 = rotateVec3D(rotV2, rotV1, rotV0);
+			rotV3 = rotateVec3D(rotV3, rotV1, rotV0);
+			
+		}*/
+		
+		if(e.getKeyCode() == KeyEvent.VK_UP) {
+			
+//			camFovVec = rotateVec3D(camFovVec, rotV2, rotV3);
+//			vertProjVec = rotateVec3D(vertProjVec, rotV2, rotV3);
+//			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
+/*			rotV0b = rotateVec3D(rotV0b, rotV2, rotV3);
+			rotV1b = rotateVec3D(rotV1b, rotV2, rotV3);
+*/			
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+			
+//			camFovVec = rotateVec3D(camFovVec, rotV3, rotV2);
+//			vertProjVec = rotateVec3D(vertProjVec, rotV3, rotV2);
+//			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
+/*			rotV0b = rotateVec3D(rotV0b, rotV3, rotV2);
+			rotV1b = rotateVec3D(rotV1b, rotV3, rotV2);*/
 			
 		}
 		
