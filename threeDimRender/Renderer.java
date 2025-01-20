@@ -27,7 +27,7 @@ public class Renderer extends JPanel implements KeyListener {
 	int centerX = (int) frameDimensions[0] / 2;
 	int centerY = (int) frameDimensions[1] / 2;
 	
-	double fov = Math.PI / 2.0;
+	double fov = Math.PI / 3.0;
 	
 	//Camera Vectors
 	double[] camTL = new double[3];
@@ -71,21 +71,20 @@ public class Renderer extends JPanel implements KeyListener {
 		
 		//Setup Horizontal Component of Projection Bivector 
 		horiProjVecLen = 2 * Math.abs(camTL[0]);
-		horiProjVec[0] = 1.0; //Only capture direction to ease future calculations
 		
 		//Setup Vertical Component of Projection Bivector to respect Aspect Ratio Of Display
 		vertProjVecLen = horiProjVecLen / aspectRatio;
-		vertProjVec[1] = -1.0;
 		
-		if(vertProjVecLen / 2.0 > camTL[0]) {
+		if(vertProjVecLen / 2.0 > camTL[2]) {
 			System.err.println("vertProjVecLen is unreasonably large! Change FOV!");
-			System.exit(0);
+			System.out.println(frameDimensions[0] + " " + frameDimensions[1]);
+            System.exit(1);
 		} //TODO Explore this more
 		
 		//Get Angle to rotate CamFovVec to get proper vertical component as decided above
-		double liftAngle = Math.asin((vertProjVecLen / 2.0) / camTL[0]);
-		//Dividing by camTL[0] as it is the radius (hypotenuse) of the slice of circle in the sphere
-		//that these vectors are located in
+		double liftAngle = Math.asin((vertProjVecLen / 2.0) / camTL[2]);
+		//Dividing by camTL[2] as it is the radius (hypotenuse) of the slice of sphere
+		//that these vectors are located in. I.e. radius in one ring of sphere
 		
 		rotVec1[0] = 0.0;
 		rotVec1[2] = 1.0;
