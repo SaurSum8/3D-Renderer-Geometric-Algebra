@@ -1,4 +1,3 @@
-package threeDimRender;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -27,7 +26,7 @@ public class Renderer extends JPanel implements KeyListener {
 	int centerX = (int) frameDimensions[0] / 2;
 	int centerY = (int) frameDimensions[1] / 2;
 	
-	double fov = Math.PI / 3.0;
+	double fov = Math.PI / 2.0;
 	
 	//Camera Vectors
 	double[] camTL = new double[3];
@@ -351,6 +350,14 @@ public class Renderer extends JPanel implements KeyListener {
 		
 		return normed;
 	}
+
+    public void updateProjVectors() {
+        horiProjVec = sub3D(camTR, camTL);
+		vertProjVec = sub3D(camBL, camTL);
+		horiProjVec = normalize3D(horiProjVec);
+		vertProjVec = normalize3D(vertProjVec);
+		projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
+    }
 	
 	@Override
 	public void keyTyped(KeyEvent e) {}
@@ -360,9 +367,6 @@ public class Renderer extends JPanel implements KeyListener {
 	
 	double[] rotV0 = {1.0, 0.0, 0.0};
 	double[] rotV1 = {Math.cos(Math.PI / 180.0), 0.0, Math.sin(Math.PI / 180.0)};
-	
-	double[] rotV0b = {1.0, 0.0, 0.0};
-	double[] rotV1b = {Math.cos(Math.PI / 180.0), 0.0, Math.sin(Math.PI / 180.0)};
 	
 	double[] rotV2 = {0.0, 0.0, 1.0};
 	double[] rotV3 = {0.0, Math.sin(Math.PI / 180.0), Math.cos(Math.PI / 180.0)};
@@ -374,7 +378,7 @@ public class Renderer extends JPanel implements KeyListener {
 			System.exit(0);
 		
 		
-		/*if(e.getKeyCode() == KeyEvent.VK_1) {
+		if(e.getKeyCode() == KeyEvent.VK_1) {
 			
 			rad += 0.1;
 			
@@ -391,41 +395,42 @@ public class Renderer extends JPanel implements KeyListener {
 		
 		if(e.getKeyCode() == KeyEvent.VK_LEFT) {
 			
-			camFovVec = rotateVec3D(camFovVec, rotV0, rotV1);
-			horiProjVec = rotateVec3D(horiProjVec, rotV0b, rotV1b);
-			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
-			rotV2 = rotateVec3D(rotV2, rotV0, rotV1);
-			rotV3 = rotateVec3D(rotV3, rotV0, rotV1);
+			camTL = rotateVec3D(camTL, rotV0, rotV1);
+            camTR = rotateVec3D(camTR, rotV0, rotV1);
+            camBL = rotateVec3D(camBL, rotV0, rotV1);
+			updateProjVectors();
 			
+            rotV2 = rotateVec3D(rotV2, rotV0, rotV1);
+            rotV3 = rotateVec3D(rotV3, rotV0, rotV1);
 		}
 		
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
 			
-			camFovVec = rotateVec3D(camFovVec, rotV1, rotV0);
-			horiProjVec = rotateVec3D(horiProjVec, rotV1b, rotV0b);
-			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
-			rotV2 = rotateVec3D(rotV2, rotV1, rotV0);
-			rotV3 = rotateVec3D(rotV3, rotV1, rotV0);
+			camTL = rotateVec3D(camTL, rotV1, rotV0);
+            camTR = rotateVec3D(camTR, rotV1, rotV0);
+            camBL = rotateVec3D(camBL, rotV1, rotV0);
+			updateProjVectors();
+
+            rotV2 = rotateVec3D(rotV2, rotV1, rotV0);
+            rotV3 = rotateVec3D(rotV3, rotV1, rotV0);
 			
-		}*/
+		}
 		
 		if(e.getKeyCode() == KeyEvent.VK_UP) {
 			
-//			camFovVec = rotateVec3D(camFovVec, rotV2, rotV3);
-//			vertProjVec = rotateVec3D(vertProjVec, rotV2, rotV3);
-//			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
-/*			rotV0b = rotateVec3D(rotV0b, rotV2, rotV3);
-			rotV1b = rotateVec3D(rotV1b, rotV2, rotV3);
-*/			
+			camTL = rotateVec3D(camTL, rotV2, rotV3);
+			camTR = rotateVec3D(camTR, rotV2, rotV3);
+            camBL = rotateVec3D(camBL, rotV2, rotV3);
+			updateProjVectors();
+
 		}
 		
 		if(e.getKeyCode() == KeyEvent.VK_DOWN) {
 			
-//			camFovVec = rotateVec3D(camFovVec, rotV3, rotV2);
-//			vertProjVec = rotateVec3D(vertProjVec, rotV3, rotV2);
-//			projBiVec = biVecCompMul3D(horiProjVec, vertProjVec);
-/*			rotV0b = rotateVec3D(rotV0b, rotV3, rotV2);
-			rotV1b = rotateVec3D(rotV1b, rotV3, rotV2);*/
+            camTL = rotateVec3D(camTL, rotV3, rotV2);
+			camTR = rotateVec3D(camTR, rotV3, rotV2);
+            camBL = rotateVec3D(camBL, rotV3, rotV2);
+			updateProjVectors();
 			
 		}
 		
